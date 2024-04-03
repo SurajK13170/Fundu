@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat</title>
+    <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .chat-header {
+            text-align: center;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .message.sent {
+            background-color: #eee;
+            align-self: flex-end;
+        }
+
+        .message.received {
+            background-color: #fafafa;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <h1>Chat App</h1>
+        </header>
+        <main class="chat-history">
+        </main>
+        <footer class="chat-input">
+            <input type="text" id="message-input" placeholder="Type your message">
+            <button id="send-button">Send</button>
+        </footer>
+    </div>
+    <script>
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatHistory = document.querySelector('.chat-history');
+
+        function sendMessage(message) {
+            fetch('http://localhost:8080/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage(message, 'sent');
+                    addMessage(data.response, 'received');
+                })
+                .catch(error => console.error(error));
+        }
+
+        function addMessage(text, type) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', type);
+            messageElement.innerText = text;
+            chatHistory.appendChild(messageElement);
+            chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+        }
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value;
+            if (message.trim()) {
+                sendMessage(message);
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+
+</html>
